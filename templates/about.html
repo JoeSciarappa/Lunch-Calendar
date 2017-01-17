@@ -1,0 +1,95 @@
+{% extends "outline.html" %}
+
+{% block head %}{% endblock %}
+
+{% block jscript %}
+
+{% endblock %}
+
+
+{% block content %}
+<div id="container" style="padding-left: 5%; padding-top 15%;padding-right: 5%;width:100%"> 
+
+<h3> Name </h3>
+  <div id="name" style="padding-left: 6%;">
+     SMB Linux Break Manager
+  </div>
+
+
+<h3> Description </h3>
+  <div id="description" style="padding-left: 6%;">
+	<b>SMB Linux Break Manager</b> is a tool to schedule and administer break times. 
+  </div>
+
+<h3>Term Definitions </h3>
+  <div id="terms" style="padding-left: 6%;">
+
+    <b>Name</b> -- Your name. Since there is no authentication method the application will allow you to select any name from the list. </br>
+    <b>Start Time</b> -- This is the time you initate your break </br>
+    <b>End Time</b> -- This is the time your break ends. </br> 
+    <b>Mode</b> -- Select an option that best defines your work focus for the day. Options: Phones, Chats, Alerts, Tickets, Other </br>
+    <b>Action</b> -- add or remove break defined by Name, Start Time, End Time, and Mode </br>
+  </div> 
+
+
+<h3> Application Behavior Notes </h3>
+  <div id="behavior" style="padding-left: 6%;">
+
+  <ul style="list-style-type:circle;padding: 0;">
+     <li>You may add more than one break</li>
+     <li> There is no warning or limit on the amount of time you can schedule a break </li>
+     <li> A warning will display in the header of the homepage if more than two Rackers of the same mode have scheduled a break that overlaps </li> 
+     <li>If 'auto' is in <i>either</i> start time <i>or</i> end time, it will try to place you into the least dense interval. Example) If you selected a start time of 11:00 AM but have 'auto' as the end time, it will give you a 1 hour break slot without considering your entered start time </li>
+     <li>If adding more than one break, mode <i>must</i> be the same for all breaks</li>
+     <li>Composit break schedule will show all submitted breaks dispite selected mode. The application will spawn a new, mode specific, graph for each mode that has a population greater than zero</li>
+  </ul>
+
+
+  </div>
+
+
+<h3> Usage </h3> 
+  <div id="usage" style="padding-left: 6%;">
+
+    <b>Add Break</b> - pick name, start time, end time, and mode per your preference. Set action to 'Add' then press submit
+    <ul style="list-style-type:circle;">
+      <li>Start time must be before end time</li>
+      <li>New breaks must not overlap with existing breaks </li>
+    </ul>
+
+    <b>Remove Break</b> - pick the same name, start time, end time, and mode of the break you wish to remove. Set action to 'Remove' then press submit 
+    <ul style="list-style-type:circle;">
+      <li>If auto is selected for start time <i> or </i> end time the application will remove all occurances for that name</li>
+    </ul>
+
+
+    <b>Submitting a break with curl</b>
+    <ul style="list-style-type:circle;">
+      <li>You may send a POST request using curl to schedule a break. The payload will need to have values for name, start, end, mode and action
+          <ul>
+            <li><b>name</b> -- format: first name + %20 + last initial </li>
+            <li><b>start</b> -- format: hh:m0:00 </li>
+            <li><b>end</b> -- format: hh:m0:00 </li>
+            <li><b>mode</b> -- options: phones, chats, tickets, alerts, other </li>
+            <li><b>action</b> -- options: add , remove </li>
+
+          </ul>
+      <li> Example 
+	<ul>
+      <li>  
+
+	name=&quot;Joe%20S&quot;;start=&quot;12:00:00&quot;;end=&quot;13:00:00&quot;;mode=&quot;phones&quot;;action=&quot;add&quot;; curl --data &quot;Name=$name&amp;Start%20Time=$start&amp;End%20Time=$end&amp;Mode=$mode&amp;Action=$action&quot; https://lunch.josephsciarappa.com 2&gt;&amp;1 | grep -A 2 &quot;&lt;div id='message'&gt;&quot; | tail -n1
+
+      </li>
+      </ul>
+      </li>
+    </ul>
+</div>
+<h3> Source </h3>
+{% include 'source.html' %}
+
+
+</div> <!-- end container div -->
+
+{% endblock %}
+

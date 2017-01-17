@@ -1,0 +1,598 @@
+{% extends "outline.html" %}
+
+{% block head %}{% endblock %}
+
+{% block jscript %}
+
+
+
+$(function () {
+
+    $('#message').fadeIn('fast').delay(10000).fadeOut('slow');
+
+
+{% if compCategories and compData %}
+    $('#CompositContainer').highcharts({
+
+        chart: {
+            type: 'columnrange',
+            inverted: true
+        },
+
+        title: {
+            text: 'Composite Break Schedule'
+        },
+
+        subtitle: {
+            text: ''
+        },
+
+        xAxis: {
+
+                {% if compCategories %} 
+                {{ compCategories | safe }}
+                {% endif %}
+
+
+        },
+
+        yAxis: {
+	    type: 'datetime',
+	    dateTimeLabelFormats : {
+		hour: '%I %p',
+		minute: '%I:%M %p'
+	    },
+            title: {
+                text: 'Time ( CST )'
+            }
+        },
+
+        tooltip: {
+	    pointFormat: "Break Time: {point.low:%I:%M %p} - {point.high:%I:%M %p}" 
+
+        },
+
+        plotOptions: {
+            columnrange: {
+                dataLabels: {
+                    enabled: true,
+                    formatter: function () {
+                        return Highcharts.dateFormat('%I:%M %p', this.y) ;
+                    }
+                }
+            }
+        },
+
+        legend: {
+            enabled: false
+        },
+
+        series: [{
+            name: 'Break Range',
+            data: [
+
+		{% if compData %}	
+		{{ compData | safe }}
+		{% endif %}
+
+ 
+            ]
+        }]
+
+    });
+{% endif %}
+{% if phoneCategories and phoneData %}
+  $('#PhoneContainer').highcharts({
+
+        chart: {
+            type: 'columnrange',
+            inverted: true
+        },
+
+        title: {
+            text: 'Phone Break Schedule'
+        },
+
+        subtitle: {
+            text: ''
+        },
+
+        xAxis: {
+
+                {% if phoneCategories %} 
+                {{ phoneCategories | safe }}
+                {% endif %}
+
+
+        },
+
+        yAxis: {
+	    type: 'datetime',
+	    dateTimeLabelFormats : {
+		hour: '%I %p',
+		minute: '%I:%M %p'
+	    },
+            title: {
+                text: 'Time ( CST )'
+            }
+        },
+
+        tooltip: {
+	    pointFormat: "Break Time: {point.low:%I:%M %p} - {point.high:%I:%M %p}" 
+
+        },
+
+        plotOptions: {
+            columnrange: {
+                dataLabels: {
+                    enabled: true,
+                    formatter: function () {
+                        return Highcharts.dateFormat('%I:%M %p', this.y) ;
+                    }
+                }
+            }
+        },
+
+        legend: {
+            enabled: false
+        },
+
+        series: [{
+            name: 'Break Range',
+            data: [
+
+		{% if phoneData %}	
+		{{ phoneData | safe }}
+		{% endif %}
+
+ 
+            ]
+        }]
+
+    });
+{% endif %}
+{% if chatCategories and chatData %}
+ $('#ChatContainer').highcharts({
+
+        chart: {
+            type: 'columnrange',
+            inverted: true
+        },
+
+        title: {
+            text: 'Chat Break Schedule'
+        },
+
+        subtitle: {
+            text: ''
+        },
+
+        xAxis: {
+
+                {% if chatCategories %} 
+                {{ chatCategories | safe }}
+                {% endif %}
+
+
+        },
+
+        yAxis: {
+	    type: 'datetime',
+	    dateTimeLabelFormats : {
+		hour: '%I %p',
+		minute: '%I:%M %p'
+	    },
+            title: {
+                text: 'Time ( CST )'
+            }
+        },
+
+        tooltip: {
+	    pointFormat: "Break Time: {point.low:%I:%M %p} - {point.high:%I:%M %p}" 
+
+        },
+
+        plotOptions: {
+            columnrange: {
+                dataLabels: {
+                    enabled: true,
+                    formatter: function () {
+                        return Highcharts.dateFormat('%I:%M %p', this.y) ;
+                    }
+                }
+            }
+        },
+
+        legend: {
+            enabled: false
+        },
+
+        series: [{
+            name: 'Break Range',
+            data: [
+
+		{% if chatData %}	
+		{{ chatData | safe }}
+		{% endif %}
+
+ 
+            ]
+        }]
+
+    });
+{% endif %}
+{%if ticketCategories and ticketData %}
+ $('#TicketContainer').highcharts({
+
+        chart: {
+            type: 'columnrange',
+            inverted: true
+        },
+
+        title: {
+            text: 'Ticket Break Schedule'
+        },
+
+        subtitle: {
+            text: ''
+        },
+
+        xAxis: {
+
+                {% if ticketCategories %} 
+                {{ ticketCategories | safe }}
+                {% endif %}
+
+
+        },
+
+        yAxis: {
+	    type: 'datetime',
+	    dateTimeLabelFormats : {
+		hour: '%I %p',
+		minute: '%I:%M %p'
+	    },
+            title: {
+                text: 'Time ( CST )'
+            }
+        },
+
+        tooltip: {
+	    pointFormat: "Break Time: {point.low:%I:%M %p} - {point.high:%I:%M %p}" 
+
+        },
+
+        plotOptions: {
+            columnrange: {
+                dataLabels: {
+                    enabled: true,
+                    formatter: function () {
+                        return Highcharts.dateFormat('%I:%M %p', this.y) ;
+                    }
+                }
+            }
+        },
+
+        legend: {
+            enabled: false
+        },
+
+        series: [{
+            name: 'Break Range',
+            data: [
+
+		{% if ticketData %}	
+		{{ ticketData | safe }}
+		{% endif %}
+
+ 
+            ]
+        }]
+
+    });
+{% endif %}
+{% if alertCategories and alertData %}
+ $('#AlertContainer').highcharts({
+
+        chart: {
+            type: 'columnrange',
+            inverted: true
+        },
+
+        title: {
+            text: 'Alert Break Schedule'
+        },
+
+        subtitle: {
+            text: ''
+        },
+
+        xAxis: {
+
+                {% if alertCategories %} 
+                {{ alertCategories | safe }}
+                {% endif %}
+
+
+        },
+
+        yAxis: {
+	    type: 'datetime',
+	    dateTimeLabelFormats : {
+		hour: '%I %p',
+		minute: '%I:%M %p'
+	    },
+            title: {
+                text: 'Time ( CST )'
+            }
+        },
+
+        tooltip: {
+	    pointFormat: "Break Time: {point.low:%I:%M %p} - {point.high:%I:%M %p}" 
+
+        },
+
+        plotOptions: {
+            columnrange: {
+                dataLabels: {
+                    enabled: true,
+                    formatter: function () {
+                        return Highcharts.dateFormat('%I:%M %p', this.y) ;
+                    }
+                }
+            }
+        },
+
+        legend: {
+            enabled: false
+        },
+
+        series: [{
+            name: 'Break Range',
+            data: [
+
+		{% if alertData %}	
+		{{ alertData | safe }}
+		{% endif %}
+
+ 
+            ]
+        }]
+
+    });
+{% endif %}
+
+{% if otherCategories and otherData %}
+
+ $('#OtherContainer').highcharts({
+
+        chart: {
+            type: 'columnrange',
+            inverted: true
+        },
+
+        title: {
+            text: 'Other Break Schedule'
+        },
+
+        subtitle: {
+            text: ''
+        },
+
+        xAxis: {
+
+                {% if otherCategories %} 
+                {{ otherCategories | safe }}
+                {% endif %}
+
+
+        },
+
+        yAxis: {
+	    type: 'datetime',
+	    dateTimeLabelFormats : {
+		hour: '%I %p',
+		minute: '%I:%M %p'
+	    },
+            title: {
+                text: 'Time ( CST )'
+            }
+        },
+
+        tooltip: {
+	    pointFormat: "Break Time: {point.low:%I:%M %p} - {point.high:%I:%M %p}" 
+
+        },
+
+        plotOptions: {
+            columnrange: {
+                dataLabels: {
+                    enabled: true,
+                    formatter: function () {
+                        return Highcharts.dateFormat('%I:%M %p', this.y) ;
+                    }
+                }
+            }
+        },
+
+        legend: {
+            enabled: false
+        },
+
+        series: [{
+            name: 'Break Range',
+            data: [
+
+		{% if otherData %}	
+		{{ otherData | safe }}
+		{% endif %}
+
+ 
+            ]
+        }]
+
+    });
+{% endif %}
+
+});
+
+{% endblock %}
+
+
+{% block content %}
+
+<div id='message_container' style="padding-left: 5%; padding-top 5%;padding-right: 5%;width:100%">
+
+   {% if warning %}
+    <div id='warning' style="padding-bottom: 1%; font-size: 150%;padding-left: 5%; padding-top 5%;width:100%">
+    <h2><center> Warnings: </center></h2>
+    <b><center>  {{ warning | safe }} <center><b>
+    </div>
+    {% endif %}
+
+
+  <div id='message'>
+   {% if message %}
+    {{ message }}
+   {% endif %}
+  </div>
+
+
+
+</div>
+
+<div id="add" style="padding-left: 5%; padding-top: 1%;width:100%">
+
+<form method="post">
+<select name="Name">
+  <option value="Joe S">Joe S</option>
+  <option value="Matt V">Matt V</option>
+  <option value="Grace T">Grace T</option>
+  <option value="Pam L">Pam L</option>
+  <option value="Marcos T">Marcos T</option>
+  <option value="Carlos S">Carlos S</option>
+  <option value="Jim C">Jim C</option>
+  <option value="Lee N">Lee N</option>
+  <option value="Tim M">Tim M</option>
+  <option value="Uwe N">Uwe N</option>
+<!--  <option value="Anthony D">Anthony D</option>
+  <option value="Brandon B">Brandon B</option>
+  <option value="Jessica W">Jessica W</option>
+  <option value="Mike Herrera">Mike Herrera</option>
+  <option value="Mike Hernandez">Mike Hernandez</option>
+  <option value="Pete E">Pete E</option>
+  <option value="Rebecca S">Rebecca S</option>
+  <option value="Travis H">Travis H</option>
+  <option value="Eddie D">Eddie D</option>
+  <option value="Aubrey M">Aubrey M</option>
+  <option value="Chris H">Chris H</option>
+  <option value="Joe A">Joe A</option>
+  <option value="Josh H">Josh H</option>
+  <option value="Mallory H">Mallory H</option>
+  <option value="Mohammed A">Mohammed A</option>
+  <option value="Tom H">Tom H</option> -->
+</select>
+
+<select name="Start Time">
+  <option value=auto>Auto</option>
+  <option selected="selected" value=8:00:00>8:00 AM</option>
+  <option value=8:30:00>8:30 AM</option>
+  <option value=9:00:00>9:00 AM</option>
+  <option value=9:30:00>9:30 AM</option>
+  <option value=10:00:00>10:00 AM</option>
+  <option value=10:30:00>10:30 AM</option>
+  <option value=11:00:00>11:00 AM</option>
+  <option value=11:30:00>11:30 AM</option>
+  <option value=12:00:00>12:00 PM</option>
+  <option value=12:30:00>12:30 PM</option>
+  <option value=13:00:00>1:00 PM</option>
+  <option value=13:30:00>1:30 PM</option>
+  <option value=14:00:00>2:00 PM</option>
+  <option value=14:30:00>2:30 PM</option>
+  <option value=15:00:00>3:00 PM</option>
+  <option value=15:30:00>3:30 PM</option>
+  <option value=16:00:00>4:00 PM</option>
+  <option value=16:30:00>4:30 PM</option>
+  <option value=17:00:00>5:00 PM</option>
+  <option value=17:30:00>5:30 PM</option>
+  <option value=18:00:00>6:00 PM</option>
+</select>
+
+<select name="End Time">
+  <option value=auto>Auto</option>
+  <option selected="selected"value=8:00:00>8:00 AM</option>
+
+
+  <option value=8:30:00>8:30 AM</option>
+  <option value=9:00:00>9:00 AM</option>
+  <option value=9:30:00>9:30 AM</option>
+  <option value=10:00:00>10:00 AM</option>
+  <option value=10:30:00>10:30 AM</option>
+  <option value=11:00:00>11:00 AM</option>
+  <option value=11:30:00>11:30 AM</option>
+  <option value=12:00:00>12:00 PM</option>
+  <option value=12:30:00>12:30 PM</option>
+ <option value=13:00:00>1:00 PM</option>
+  <option value=13:30:00>1:30 PM</option>
+  <option value=14:00:00>2:00 PM</option>
+  <option value=14:30:00>2:30 PM</option>
+  <option value=15:00:00>3:00 PM</option>
+  <option value=15:30:00>3:30 PM</option>
+  <option value=16:00:00>4:00 PM</option>
+  <option value=16:30:00>4:30 PM</option>
+  <option value=17:00:00>5:00 PM</option>
+  <option value=17:30:00>5:30 PM</option>
+  <option value=18:00:00>6:00 PM</option>
+
+</select>
+
+<select name="Mode">
+  <option value="phones">Phones</option>
+  <option value="chats">Chats</option>
+  <option value="alerts">Alerts</option>
+  <option value="tickets">Tickets</option>
+  <option value="other">Other</option>
+</select>
+
+<select name="Action">
+  <option value="add">Add</option>
+  <option value="remove">Remove</option>
+</select>
+
+
+<input type="submit" value="Submit" style="">
+</form>
+
+
+</div>
+
+<div id="key" style="padding-left: 5%; padding-top: 1%;width:100%">
+<table style="boarder-spacing: 5px 0;">
+  <tr>
+    <td style="padding: 0 15px 0 1px">Key:  </td>
+    <td style="color: #000000; background-color: #588C7E; padding: 0 15px 0 15px">Phones</td>
+    <td style="color: #000000; background-color: #F2AE72; padding: 0 15px 0 15px">Chats</td>
+    <td style="color: #000000; background-color: #8C4646; padding: 0 15px 0 15px">Alerts </td>
+    <td style="color: #000000; background-color: #F2E394; padding: 0 15px 0 15px">Tickets</td>
+    <td style="color: #ffffff; background-color: #081B2D; padding: 0 15px 0 15px">Other</td>
+  </tr>
+</table>
+</div>
+
+{% if compData and compCategories %} <div id="CompositContainer" style="padding-top: 0%;width:100%; height:700px;"> </div> {% endif %}
+{% if phoneData and phoneCategories %} <div id="PhoneContainer" style="padding-top: 2%;width:100%; height:700px;"> </div> {% endif %}
+{% if chatData and chatCategories %} <div id="ChatContainer" style="padding-top: 2%;width:100%; height:700px;"> </div> {% endif %}
+{% if ticketData and ticketCategories %} <div id="TicketContainer" style="padding-top: 2%;width:100%; height:700px;"> </div> {% endif %}
+{% if alertData and alertCategories %} <div id="AlertContainer" style="padding-top: 2%;width:100%; height:700px;"> </div> {% endif %}
+{% if otherData and otherCategories %} <div id="OtherContainer" style="padding-top: 2%;width:100%; height:700px;"> </div> {% endif %}
+
+
+
+
+
+
+
+
+
+{% endblock %}
+

@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <title> SMB Linux Break Machine </title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-latest.js"></script>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}"> 
+    {% block head %} {% endblock %}
+
+<link rel="apple-touch-icon" sizes="57x57" href="{{ url_for('static', filename='favicon/apple-icon-57x57.png') }}">
+<link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('static', filename='favicon/apple-icon-60x60.png') }}">
+<link rel="apple-touch-icon" sizes="72x72" href="{{ url_for('static', filename='favicon/apple-icon-72x72.png') }}">
+<link rel="apple-touch-icon" sizes="76x76" href="{{ url_for('static', filename='favicon/apple-icon-76x76.png') }}">
+<link rel="apple-touch-icon" sizes="114x114" href="{{ url_for('static', filename='favicon/apple-icon-114x114.png') }}">
+<link rel="apple-touch-icon" sizes="120x120" href="{{ url_for('static', filename='favicon/apple-icon-120x120.png') }}">
+<link rel="apple-touch-icon" sizes="144x144" href="{{ url_for('static', filename='favicon/apple-icon-144x144.png') }}">
+<link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename='favicon/apple-icon-152x152.png') }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-icon-180x180.png') }}">
+<link rel="icon" type="image/png" sizes="192x192"  href="{{ url_for('static', filename='favicon/android-icon-192x192.png') }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+<link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='favicon/favicon-96x96.png') }}">
+<link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+<link rel="manifest" href="{{ url_for('static', filename='favicon/manifest.json') }}">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="{{ url_for('static', filename='favicon/ms-icon-144x144.png') }}">
+<meta name="theme-color" content="#ffffff">
+
+
+
+
+  </head>
+  <body>
+
+  <script type="text/JavaScript" src="{{ url_for('static', filename='dropdown.js') }}"></script> 
+  <script type="text/JavaScript" src="{{ url_for('static', filename='transition.js') }}"></script>
+  <script type="text/JavaScript" src="{{ url_for('static', filename='Highcharts/js/highcharts.js') }}"></script>
+  <script type="text/JavaScript" src="{{ url_for('static', filename='Highcharts/js/highcharts-more.js') }}"></script>
+
+
+  <script>
+
+	{% block jscript %} {% endblock %}
+
+  </script>
+
+<nav class="navbar navbar-default" role="navigation">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="https://lunch.josephsciarappa.com/">SMB Linux Break Machine</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="https://lunch.josephsciarappa.com">Home</a></li>
+        <li><a href="https://lunch.josephsciarappa.com/about">About</a></li>
+        <li class="dropdown">
+        </li>
+      </ul>
+
+        </li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+{% block content %} {% endblock %}
+
+</body>
+</html>
+

@@ -1,0 +1,410 @@
+<div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">from</span> <span style="color: #0e84b5; font-weight: bold">flask</span> <span style="color: #008800; font-weight: bold">import</span> Flask, render_template,request,flash,redirect,url_for, Markup
+<span style="color: #008800; font-weight: bold">from</span> <span style="color: #0e84b5; font-weight: bold">collections</span> <span style="color: #008800; font-weight: bold">import</span> defaultdict
+<span style="color: #008800; font-weight: bold">from</span> <span style="color: #0e84b5; font-weight: bold">datetime</span> <span style="color: #008800; font-weight: bold">import</span> datetime <span style="color: #008800; font-weight: bold">as</span> dt
+<span style="color: #008800; font-weight: bold">import</span> <span style="color: #0e84b5; font-weight: bold">mysql.connector</span> <span style="color: #008800; font-weight: bold">as</span> <span style="color: #0e84b5; font-weight: bold">mariadb</span>
+<span style="color: #008800; font-weight: bold">import</span> <span style="color: #0e84b5; font-weight: bold">datetime</span>
+<span style="color: #008800; font-weight: bold">import</span> <span style="color: #0e84b5; font-weight: bold">random</span>
+
+app <span style="color: #333333">=</span> Flask(__name__)
+
+<span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">auto</span>(cursor,mariadb_connection,user,manager,mode,message,today):
+	added<span style="color: #333333">=</span><span style="color: #0000DD; font-weight: bold">0</span>
+	density<span style="color: #333333">=</span>[]
+	tavail<span style="color: #333333">=</span>[]
+	options<span style="color: #333333">=</span>[<span style="color: #0000DD; font-weight: bold">12</span>,<span style="color: #0000DD; font-weight: bold">13</span>,<span style="color: #0000DD; font-weight: bold">11</span>,<span style="color: #0000DD; font-weight: bold">14</span>,<span style="color: #0000DD; font-weight: bold">10</span>,<span style="color: #0000DD; font-weight: bold">15</span>]
+
+	cursor<span style="color: #333333">.</span>execute(<span style="background-color: #fff0f0">&#39;&#39;&#39;SELECT HOUR(StartTime) AS Hour, count(*) AS Density FROM smblinux WHERE DATE(EndTime) = DATE(NOW()) AND Mode = &quot;</span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">&quot; GROUP BY HOUR(StartTime) HAVING Density &gt; 1 ORDER BY Density ASC;&#39;&#39;&#39;</span> <span style="color: #333333">%</span> (mode))
+	<span style="color: #008800; font-weight: bold">if</span> cursor<span style="color: #333333">.</span>rowcount:
+		<span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> cursor:
+			density<span style="color: #333333">.</span>append([row[<span style="color: #0000DD; font-weight: bold">0</span>],row[<span style="color: #0000DD; font-weight: bold">1</span>]])
+			tavail<span style="color: #333333">.</span>append(row[<span style="color: #0000DD; font-weight: bold">0</span>])
+		<span style="color: #008800; font-weight: bold">for</span> sOption <span style="color: #000000; font-weight: bold">in</span> options:
+			<span style="color: #008800; font-weight: bold">if</span> sOption <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> tavail <span style="color: #000000; font-weight: bold">and</span> added <span style="color: #333333">!=</span> <span style="color: #0000DD; font-weight: bold">1</span>:
+				added<span style="color: #333333">=</span><span style="color: #0000DD; font-weight: bold">1</span>
+				stime<span style="color: #333333">=</span> <span style="color: #007020">str</span>(today) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &#39;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(sOption) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;:00:00&#39;</span>
+				etime<span style="color: #333333">=</span> <span style="color: #007020">str</span>(today) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &#39;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(sOption<span style="color: #333333">+</span><span style="color: #0000DD; font-weight: bold">1</span>) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;:00:00&#39;</span>
+
+		<span style="color: #008800; font-weight: bold">if</span> added <span style="color: #333333">==</span> <span style="color: #0000DD; font-weight: bold">0</span>:
+			stime<span style="color: #333333">=</span> <span style="color: #007020">str</span>(today) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &#39;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(density[<span style="color: #0000DD; font-weight: bold">0</span>][<span style="color: #0000DD; font-weight: bold">0</span>]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;:00:00&#39;</span>
+			etime<span style="color: #333333">=</span> <span style="color: #007020">str</span>(today) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &#39;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(density[<span style="color: #0000DD; font-weight: bold">0</span>][<span style="color: #0000DD; font-weight: bold">0</span>]<span style="color: #333333">+</span><span style="color: #0000DD; font-weight: bold">1</span>) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;:00:00&#39;</span>
+			
+	<span style="color: #008800; font-weight: bold">else</span>:
+		seed <span style="color: #333333">=</span> random<span style="color: #333333">.</span>randrange(<span style="color: #0000DD; font-weight: bold">11</span>,<span style="color: #0000DD; font-weight: bold">14</span>)
+		stime <span style="color: #333333">=</span> <span style="color: #007020">str</span>(today) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &#39;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(seed) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;:00:00&#39;</span>
+		etime <span style="color: #333333">=</span> <span style="color: #007020">str</span>(today) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &#39;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(seed <span style="color: #333333">+</span> <span style="color: #0000DD; font-weight: bold">1</span>) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;:00:00&#39;</span>		
+
+
+	cursor<span style="color: #333333">.</span>execute(<span style="background-color: #fff0f0">&#39;&#39;&#39;INSERT INTO smblinux (Name, Manager, StartTime, EndTime, Mode) VALUES (</span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">, </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">, </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">, </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">, </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">);&#39;&#39;&#39;</span>, (user, manager, stime, etime, mode))
+	mariadb_connection<span style="color: #333333">.</span>commit()
+	message <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&#39;Racker: &#39;</span> <span style="color: #333333">+</span> user <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; -- Successfully auto-added between &#39;</span> <span style="color: #333333">+</span> stime <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; and &#39;</span> <span style="color: #333333">+</span> etime 
+
+
+	<span style="color: #008800; font-weight: bold">return</span> dataGet(cursor,message)
+
+<span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">range</span>(tlist):
+	masterlist<span style="color: #333333">=</span>[]
+	tmplist<span style="color: #333333">=</span>[]
+	rlist<span style="color: #333333">=</span>[]
+
+	<span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> tlist:
+		rlist<span style="color: #333333">.</span>append(row[<span style="color: #0000DD; font-weight: bold">0</span>])
+	rset <span style="color: #333333">=</span> <span style="color: #007020">set</span>(rlist)
+
+	<span style="color: #008800; font-weight: bold">while</span> rset:
+		tmplist<span style="color: #333333">=</span>[]
+		value <span style="color: #333333">=</span> rset<span style="color: #333333">.</span>pop()
+		tmplist<span style="color: #333333">.</span>append(value)
+		<span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> tlist:
+        	        <span style="color: #008800; font-weight: bold">if</span> row[<span style="color: #0000DD; font-weight: bold">0</span>] <span style="color: #333333">==</span> value:
+                        	tmplist<span style="color: #333333">.</span>append(row[<span style="color: #0000DD; font-weight: bold">1</span>])
+
+	        masterlist<span style="color: #333333">.</span>append(tmplist)
+
+	<span style="color: #008800; font-weight: bold">return</span> masterlist
+
+
+<span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">warnings</span>(cursor):
+
+	<span style="color: #888888">#This is messy. I couldn&#39;t think of a good way to do this</span>
+	times <span style="color: #333333">=</span> [<span style="background-color: #fff0f0">&#39;08:00&#39;</span>, <span style="background-color: #fff0f0">&#39;08:10&#39;</span>, <span style="background-color: #fff0f0">&#39;08:20&#39;</span>, <span style="background-color: #fff0f0">&#39;08:30&#39;</span>, <span style="background-color: #fff0f0">&#39;08:40&#39;</span> , <span style="background-color: #fff0f0">&#39;08:50&#39;</span>, <span style="background-color: #fff0f0">&#39;09:00&#39;</span>, <span style="background-color: #fff0f0">&#39;09:10&#39;</span>, <span style="background-color: #fff0f0">&#39;09:20&#39;</span>, <span style="background-color: #fff0f0">&#39;09:30&#39;</span>, <span style="background-color: #fff0f0">&#39;09:40&#39;</span>, <span style="background-color: #fff0f0">&#39;09:50&#39;</span>, <span style="background-color: #fff0f0">&#39;10:00&#39;</span>, <span style="background-color: #fff0f0">&#39;10:10&#39;</span>, <span style="background-color: #fff0f0">&#39;10:20&#39;</span>, <span style="background-color: #fff0f0">&#39;10:30&#39;</span>, <span style="background-color: #fff0f0">&#39;10:40&#39;</span>, <span style="background-color: #fff0f0">&#39;10:50&#39;</span>, <span style="background-color: #fff0f0">&#39;11:00&#39;</span>, <span style="background-color: #fff0f0">&#39;11:10&#39;</span>, <span style="background-color: #fff0f0">&#39;11:20&#39;</span>, <span style="background-color: #fff0f0">&#39;11:30&#39;</span>, <span style="background-color: #fff0f0">&#39;11:40&#39;</span>, <span style="background-color: #fff0f0">&#39;11:50&#39;</span>, <span style="background-color: #fff0f0">&#39;12:00&#39;</span>, <span style="background-color: #fff0f0">&#39;12:10&#39;</span>, <span style="background-color: #fff0f0">&#39;12:20&#39;</span>, <span style="background-color: #fff0f0">&#39;12:30&#39;</span>, <span style="background-color: #fff0f0">&#39;12:40&#39;</span>, <span style="background-color: #fff0f0">&#39;12:50&#39;</span>, <span style="background-color: #fff0f0">&#39;13:00&#39;</span>, <span style="background-color: #fff0f0">&#39;13:10&#39;</span>, <span style="background-color: #fff0f0">&#39;13:20&#39;</span>, <span style="background-color: #fff0f0">&#39;13:30&#39;</span>, <span style="background-color: #fff0f0">&#39;13:40&#39;</span>, <span style="background-color: #fff0f0">&#39;13:50&#39;</span>, <span style="background-color: #fff0f0">&#39;14:00&#39;</span>, <span style="background-color: #fff0f0">&#39;14:10&#39;</span>, <span style="background-color: #fff0f0">&#39;14:20&#39;</span>, <span style="background-color: #fff0f0">&#39;14:30&#39;</span>, <span style="background-color: #fff0f0">&#39;14:40&#39;</span>, <span style="background-color: #fff0f0">&#39;14:50&#39;</span>, <span style="background-color: #fff0f0">&#39;15:00&#39;</span>, <span style="background-color: #fff0f0">&#39;15:10&#39;</span>, <span style="background-color: #fff0f0">&#39;15:20&#39;</span>, <span style="background-color: #fff0f0">&#39;15:30&#39;</span>, <span style="background-color: #fff0f0">&#39;15:40&#39;</span>, <span style="background-color: #fff0f0">&#39;15:50&#39;</span>, <span style="background-color: #fff0f0">&#39;16:00&#39;</span>, <span style="background-color: #fff0f0">&#39;16:10&#39;</span>, <span style="background-color: #fff0f0">&#39;16:20&#39;</span>, <span style="background-color: #fff0f0">&#39;16:30&#39;</span>, <span style="background-color: #fff0f0">&#39;16:40&#39;</span>, <span style="background-color: #fff0f0">&#39;16:50&#39;</span>, <span style="background-color: #fff0f0">&#39;17:00&#39;</span>]
+
+	JoeOverlapArray<span style="color: #333333">=</span>[]
+	SteffenOverlapArray<span style="color: #333333">=</span>[]
+	StaceyOverlapArray<span style="color: #333333">=</span>[]
+	ChatOverlapArray<span style="color: #333333">=</span>[]
+
+        JoeArray<span style="color: #333333">=</span>[]
+        SteffenArray<span style="color: #333333">=</span>[]
+        StaceyArray<span style="color: #333333">=</span>[]
+	ChatArray<span style="color: #333333">=</span>[]
+
+	warningString<span style="color: #333333">=</span><span style="background-color: #fff0f0">&#39;&#39;</span>
+	
+
+	cursor<span style="color: #333333">.</span>execute(<span style="background-color: #fff0f0">&#39;&#39;&#39;SELECT Name, StartTime, EndTime, Manager FROM smblinux WHERE Mode=&#39;phones&#39; and DATE(EndTime) = DATE(NOW()) ORDER BY StartTime;&#39;&#39;&#39;</span>)
+	<span style="color: #008800; font-weight: bold">if</span> cursor<span style="color: #333333">.</span>rowcount:
+		<span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> cursor:
+			<span style="color: #008800; font-weight: bold">if</span> row[<span style="color: #0000DD; font-weight: bold">3</span>] <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;Joe K&#39;</span>:
+				JoeArray<span style="color: #333333">.</span>append([ row[<span style="color: #0000DD; font-weight: bold">0</span>], row[<span style="color: #0000DD; font-weight: bold">1</span>], row[<span style="color: #0000DD; font-weight: bold">2</span>]  ])
+			<span style="color: #008800; font-weight: bold">elif</span> row[<span style="color: #0000DD; font-weight: bold">3</span>] <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;Steffen H&#39;</span>:
+				SteffenArray<span style="color: #333333">.</span>append([ row[<span style="color: #0000DD; font-weight: bold">0</span>], row[<span style="color: #0000DD; font-weight: bold">1</span>], row[<span style="color: #0000DD; font-weight: bold">2</span>] ])
+			<span style="color: #008800; font-weight: bold">elif</span> row[<span style="color: #0000DD; font-weight: bold">3</span>] <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;Stacey F&#39;</span>:
+				StaceyArray<span style="color: #333333">.</span>append([ row[<span style="color: #0000DD; font-weight: bold">0</span>], row[<span style="color: #0000DD; font-weight: bold">1</span>], row[<span style="color: #0000DD; font-weight: bold">2</span>] ])
+
+		<span style="color: #008800; font-weight: bold">for</span> t <span style="color: #000000; font-weight: bold">in</span> times:
+			t <span style="color: #333333">=</span> dt<span style="color: #333333">.</span>strptime( <span style="color: #007020">str</span>(datetime<span style="color: #333333">.</span>date<span style="color: #333333">.</span>today()) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &#39;</span> <span style="color: #333333">+</span> t <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;:01&#39;</span>, <span style="background-color: #fff0f0">&quot;%Y-%m-</span><span style="background-color: #eeeeee">%d</span><span style="background-color: #fff0f0"> %H:%M:%S&quot;</span>)
+			JoeCount<span style="color: #333333">=</span><span style="color: #0000DD; font-weight: bold">0</span>
+			SteffenCount<span style="color: #333333">=</span><span style="color: #0000DD; font-weight: bold">0</span>
+			StaceyCount<span style="color: #333333">=</span><span style="color: #0000DD; font-weight: bold">0</span>
+			<span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> JoeArray:
+				<span style="color: #008800; font-weight: bold">if</span> row[<span style="color: #0000DD; font-weight: bold">1</span>] <span style="color: #333333">&lt;=</span> t <span style="color: #333333">&lt;=</span> row[<span style="color: #0000DD; font-weight: bold">2</span>]:
+					JoeCount<span style="color: #333333">+=</span><span style="color: #0000DD; font-weight: bold">1</span>
+			<span style="color: #008800; font-weight: bold">if</span> JoeCount <span style="color: #333333">&gt;</span> <span style="color: #0000DD; font-weight: bold">2</span>:
+				JoeOverlapArray<span style="color: #333333">.</span>append([JoeCount,t])
+
+                        <span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> SteffenArray:
+                                <span style="color: #008800; font-weight: bold">if</span> row[<span style="color: #0000DD; font-weight: bold">1</span>] <span style="color: #333333">&lt;=</span> t <span style="color: #333333">&lt;=</span> row[<span style="color: #0000DD; font-weight: bold">2</span>]:
+                                        SteffenCount<span style="color: #333333">+=</span><span style="color: #0000DD; font-weight: bold">1</span>
+			<span style="color: #008800; font-weight: bold">if</span> SteffenCount <span style="color: #333333">&gt;</span> <span style="color: #0000DD; font-weight: bold">2</span>:
+                        	SteffenOverlapArray<span style="color: #333333">.</span>append([SteffenCount,t])
+
+                        <span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> StaceyArray:
+                                <span style="color: #008800; font-weight: bold">if</span> row[<span style="color: #0000DD; font-weight: bold">1</span>] <span style="color: #333333">&lt;=</span> t <span style="color: #333333">&lt;=</span> row[<span style="color: #0000DD; font-weight: bold">2</span>]:
+                                	StaceyCount<span style="color: #333333">+=</span><span style="color: #0000DD; font-weight: bold">1</span>
+			<span style="color: #008800; font-weight: bold">if</span> StaceyCount <span style="color: #333333">&gt;</span> <span style="color: #0000DD; font-weight: bold">2</span>:
+                        	StaceyOverlapArray<span style="color: #333333">.</span>append([StaceyCount,t])
+				
+
+		JoeOverlapArray <span style="color: #333333">=</span> <span style="color: #007020">range</span>(JoeOverlapArray)
+		<span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> JoeOverlapArray:	
+			n<span style="color: #333333">=</span><span style="color: #0000DD; font-weight: bold">0</span>
+			<span style="color: #008800; font-weight: bold">while</span> n <span style="color: #333333">&lt;</span> <span style="color: #007020">len</span>(row):
+				<span style="color: #008800; font-weight: bold">if</span> n <span style="color: #333333">==</span> <span style="color: #0000DD; font-weight: bold">0</span>:
+					warningString <span style="color: #333333">+=</span> <span style="color: #007020">str</span>(row[n]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &lt;i&gt;Watchdog&lt;/i&gt; phone Rackers out at &#39;</span>
+				<span style="color: #008800; font-weight: bold">elif</span> n<span style="color: #333333">+</span><span style="color: #0000DD; font-weight: bold">1</span> <span style="color: #333333">!=</span> <span style="color: #007020">len</span>(row):
+					warningString <span style="color: #333333">+=</span> <span style="color: #007020">str</span>(row[n]<span style="color: #333333">.</span>strftime(<span style="background-color: #fff0f0">&#39;%I:%M %p&#39;</span>)) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;, &#39;</span> 
+				<span style="color: #008800; font-weight: bold">else</span>: 
+					warningString <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&#39;and &#39;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(row[n]<span style="color: #333333">.</span>strftime(<span style="background-color: #fff0f0">&#39;%I:%M %p&#39;</span>)) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;&lt;/br&gt;&#39;</span>
+				n<span style="color: #333333">+=</span><span style="color: #0000DD; font-weight: bold">1</span>
+
+                SteffenOverlapArray <span style="color: #333333">=</span> <span style="color: #007020">range</span>(SteffenOverlapArray)    
+                <span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> SteffenOverlapArray:    
+                        n<span style="color: #333333">=</span><span style="color: #0000DD; font-weight: bold">0</span> 
+                        <span style="color: #008800; font-weight: bold">while</span> n <span style="color: #333333">&lt;</span> <span style="color: #007020">len</span>(row):
+                                <span style="color: #008800; font-weight: bold">if</span> n <span style="color: #333333">==</span> <span style="color: #0000DD; font-weight: bold">0</span>:
+                                        warningString <span style="color: #333333">+=</span> <span style="color: #007020">str</span>(row[n]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &lt;i&gt;Spattlecock&lt;/i&gt; phone Rackers out at &#39;</span>
+                                <span style="color: #008800; font-weight: bold">elif</span> n<span style="color: #333333">+</span><span style="color: #0000DD; font-weight: bold">1</span> <span style="color: #333333">!=</span> <span style="color: #007020">len</span>(row):
+                                        warningString <span style="color: #333333">+=</span> <span style="color: #007020">str</span>(row[n]<span style="color: #333333">.</span>strftime(<span style="background-color: #fff0f0">&#39;%I:%M %p&#39;</span>)) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;, &#39;</span> 
+                                <span style="color: #008800; font-weight: bold">else</span>: 
+                                        warningString <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&#39;and &#39;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(row[n]<span style="color: #333333">.</span>strftime(<span style="background-color: #fff0f0">&#39;%I:%M %p&#39;</span>)) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;&lt;/br&gt;&#39;</span>
+                                n<span style="color: #333333">+=</span><span style="color: #0000DD; font-weight: bold">1</span>
+
+                StaceyOverlapArray <span style="color: #333333">=</span> <span style="color: #007020">range</span>(StaceyOverlapArray)
+                <span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> StaceyOverlapArray:
+                        n<span style="color: #333333">=</span><span style="color: #0000DD; font-weight: bold">0</span>
+                        <span style="color: #008800; font-weight: bold">while</span> n <span style="color: #333333">&lt;</span> <span style="color: #007020">len</span>(row):
+                                <span style="color: #008800; font-weight: bold">if</span> n <span style="color: #333333">==</span> <span style="color: #0000DD; font-weight: bold">0</span>:
+                                        warningString <span style="color: #333333">+=</span> <span style="color: #007020">str</span>(row[n]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &lt;i&gt;Pork Chop Express&lt;/i&gt; phone Rackers out at &#39;</span>
+                                <span style="color: #008800; font-weight: bold">elif</span> n<span style="color: #333333">+</span><span style="color: #0000DD; font-weight: bold">1</span> <span style="color: #333333">!=</span> <span style="color: #007020">len</span>(row):
+                                        warningString <span style="color: #333333">+=</span> <span style="color: #007020">str</span>(row[n]<span style="color: #333333">.</span>strftime(<span style="background-color: #fff0f0">&#39;%I:%M %p&#39;</span>)) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;, &#39;</span>
+                                <span style="color: #008800; font-weight: bold">else</span>:
+                                        warningString <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&#39;and &#39;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(row[n]<span style="color: #333333">.</span>strftime(<span style="background-color: #fff0f0">&#39;%I:%M %p&#39;</span>)) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;&lt;/br&gt;&#39;</span>
+                                n<span style="color: #333333">+=</span><span style="color: #0000DD; font-weight: bold">1</span>
+
+
+	cursor<span style="color: #333333">.</span>execute(<span style="background-color: #fff0f0">&#39;&#39;&#39;SELECT Name, StartTime, EndTime, Manager FROM smblinux WHERE Mode=&#39;chats&#39; and DATE(EndTime) = DATE(NOW()) ORDER BY StartTime;&#39;&#39;&#39;</span>)
+	<span style="color: #008800; font-weight: bold">if</span> cursor<span style="color: #333333">.</span>rowcount:
+		<span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> cursor:
+			ChatArray<span style="color: #333333">.</span>append([ row[<span style="color: #0000DD; font-weight: bold">0</span>], row[<span style="color: #0000DD; font-weight: bold">1</span>], row[<span style="color: #0000DD; font-weight: bold">2</span>] ])
+		<span style="color: #008800; font-weight: bold">for</span> t <span style="color: #000000; font-weight: bold">in</span> times:
+			ChatCount<span style="color: #333333">=</span><span style="color: #0000DD; font-weight: bold">0</span>
+			t <span style="color: #333333">=</span> dt<span style="color: #333333">.</span>strptime( <span style="color: #007020">str</span>(datetime<span style="color: #333333">.</span>date<span style="color: #333333">.</span>today()) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &#39;</span> <span style="color: #333333">+</span> t <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;:01&#39;</span>, <span style="background-color: #fff0f0">&quot;%Y-%m-</span><span style="background-color: #eeeeee">%d</span><span style="background-color: #fff0f0"> %H:%M:%S&quot;</span>)	
+			<span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> ChatArray:
+				<span style="color: #008800; font-weight: bold">if</span> row[<span style="color: #0000DD; font-weight: bold">1</span>] <span style="color: #333333">&lt;=</span> t <span style="color: #333333">&lt;=</span> row[<span style="color: #0000DD; font-weight: bold">2</span>]:
+					ChatCount<span style="color: #333333">+=</span><span style="color: #0000DD; font-weight: bold">1</span>
+			<span style="color: #008800; font-weight: bold">if</span> ChatCount <span style="color: #333333">&gt;</span> <span style="color: #0000DD; font-weight: bold">1</span>:
+				ChatOverlapArray<span style="color: #333333">.</span>append([ChatCount,t])
+		<span style="color: #008800; font-weight: bold">if</span> <span style="color: #007020">len</span>(ChatOverlapArray) <span style="color: #333333">&gt;</span> <span style="color: #0000DD; font-weight: bold">0</span>:	
+			warningString <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&quot;Chat Racker&#39;s breaks overlap &lt;/br&gt;&quot;</span>
+
+	myFile <span style="color: #333333">=</span> <span style="color: #007020">open</span>(<span style="background-color: #fff0f0">&#39;/var/log/flask.log&#39;</span>, <span style="background-color: #fff0f0">&#39;a&#39;</span>)
+	myFile<span style="color: #333333">.</span>write(<span style="color: #007020">str</span>(SteffenOverlapArray))
+
+	<span style="color: #008800; font-weight: bold">return</span> warningString
+
+<span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">dataGet</span>(cursor,message):
+
+       <span style="color: #888888">#Data Structures</span>
+	defaultList<span style="color: #333333">=</span>[<span style="background-color: #fff0f0">&#39;&#39;</span>, <span style="background-color: #fff0f0">&#39;&#39;</span>]
+	dataSet<span style="color: #333333">=</span>defaultdict(<span style="color: #008800; font-weight: bold">lambda</span>: defaultList )
+	modeArray<span style="color: #333333">=</span>[]
+	iteration<span style="color: #333333">=</span><span style="color: #0000DD; font-weight: bold">0</span>
+
+        <span style="color: #888888">#Get available Modes to determine interation count</span>
+        cursor<span style="color: #333333">.</span>execute(<span style="background-color: #fff0f0">&#39;&#39;&#39;select DISTINCT(Mode) from smblinux WHERE DATE(EndTime) = DATE(NOW()) ORDER BY Mode;&#39;&#39;&#39;</span>)
+        <span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> cursor:
+                modeArray<span style="color: #333333">.</span>append(<span style="color: #007020">str</span>(row[<span style="color: #0000DD; font-weight: bold">0</span>]))
+
+	<span style="color: #008800; font-weight: bold">while</span> iteration <span style="color: #333333">&lt;=</span> <span style="color: #007020">len</span>(modeArray):
+
+	        timesArray<span style="color: #333333">=</span>[]
+		dataArray<span style="color: #333333">=</span>[]
+	
+ 	        <span style="color: #008800; font-weight: bold">if</span> iteration <span style="color: #333333">==</span> <span style="color: #007020">len</span>(modeArray):
+        		cursor<span style="color: #333333">.</span>execute(<span style="background-color: #fff0f0">&#39;&#39;&#39;SELECT * FROM smblinux WHERE DATE(EndTime) = DATE(NOW()) ORDER BY StartTime,Manager;&#39;&#39;&#39;</span>)
+			<span style="color: #008800; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> cursor<span style="color: #333333">.</span>rowcount:
+				categories<span style="color: #333333">=</span><span style="background-color: #fff0f0">&quot;&quot;</span>
+			<span style="color: #008800; font-weight: bold">else</span>:
+				categories<span style="color: #333333">=</span><span style="background-color: #fff0f0">&quot;categories: [&quot;</span>
+	        		<span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> cursor:
+       	        			timesArray<span style="color: #333333">.</span>append([ row[<span style="color: #0000DD; font-weight: bold">0</span>], row[<span style="color: #0000DD; font-weight: bold">1</span>], row[<span style="color: #0000DD; font-weight: bold">2</span>], row [<span style="color: #0000DD; font-weight: bold">3</span>], row[<span style="color: #0000DD; font-weight: bold">4</span>] ])
+			key<span style="color: #333333">=</span><span style="background-color: #fff0f0">&quot;composit&quot;</span>
+		<span style="color: #008800; font-weight: bold">else</span>:
+                        cursor<span style="color: #333333">.</span>execute(<span style="background-color: #fff0f0">&#39;&#39;&#39;SELECT * FROM smblinux WHERE DATE(EndTime) = DATE(NOW()) and Mode = &quot;</span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">&quot; ORDER BY StartTime,Manager;&#39;&#39;&#39;</span> <span style="color: #333333">%</span> (modeArray[iteration]))
+			<span style="color: #008800; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> cursor<span style="color: #333333">.</span>rowcount:
+				categories<span style="color: #333333">=</span><span style="background-color: #fff0f0">&quot;&quot;</span>
+			<span style="color: #008800; font-weight: bold">else</span>:
+				categories<span style="color: #333333">=</span><span style="background-color: #fff0f0">&quot;categories: [&quot;</span>
+                        	<span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> cursor:
+                                	timesArray<span style="color: #333333">.</span>append([ row[<span style="color: #0000DD; font-weight: bold">0</span>], row[<span style="color: #0000DD; font-weight: bold">1</span>], row[<span style="color: #0000DD; font-weight: bold">2</span>], row [<span style="color: #0000DD; font-weight: bold">3</span>], row[<span style="color: #0000DD; font-weight: bold">4</span>] ])
+			key<span style="color: #333333">=</span><span style="color: #007020">str</span>(modeArray[iteration])
+
+
+		count<span style="color: #333333">=</span><span style="color: #0000DD; font-weight: bold">0</span>
+	        data<span style="color: #333333">=</span><span style="background-color: #fff0f0">&quot;&quot;</span>
+		<span style="color: #008800; font-weight: bold">for</span> rackerArray <span style="color: #000000; font-weight: bold">in</span> timesArray:
+			lowT <span style="color: #333333">=</span> <span style="color: #007020">str</span>(rackerArray[<span style="color: #0000DD; font-weight: bold">2</span>])<span style="color: #333333">.</span>split()[<span style="color: #0000DD; font-weight: bold">1</span>]<span style="color: #333333">.</span>split(<span style="background-color: #fff0f0">&#39;:&#39;</span>)
+                	highT <span style="color: #333333">=</span> <span style="color: #007020">str</span>(rackerArray[<span style="color: #0000DD; font-weight: bold">3</span>])<span style="color: #333333">.</span>split()[<span style="color: #0000DD; font-weight: bold">1</span>]<span style="color: #333333">.</span>split(<span style="background-color: #fff0f0">&#39;:&#39;</span>)
+                	lowD <span style="color: #333333">=</span> <span style="color: #007020">str</span>(rackerArray[<span style="color: #0000DD; font-weight: bold">2</span>])<span style="color: #333333">.</span>split()[<span style="color: #0000DD; font-weight: bold">0</span>]<span style="color: #333333">.</span>split(<span style="background-color: #fff0f0">&#39;-&#39;</span>)
+                	highD <span style="color: #333333">=</span> <span style="color: #007020">str</span>(rackerArray[<span style="color: #0000DD; font-weight: bold">3</span>])<span style="color: #333333">.</span>split()[<span style="color: #0000DD; font-weight: bold">0</span>]<span style="color: #333333">.</span>split(<span style="background-color: #fff0f0">&#39;-&#39;</span>)
+
+			<span style="color: #888888">#Colors</span>
+			<span style="color: #008800; font-weight: bold">if</span> rackerArray[<span style="color: #0000DD; font-weight: bold">1</span>] <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&quot;Joe K&quot;</span>:
+				color <span style="color: #333333">=</span> <span style="background-color: #fff0f0">&quot;#5d6d7e&quot;</span>
+				<span style="color: #008800; font-weight: bold">if</span> iteration <span style="color: #333333">==</span> <span style="color: #007020">len</span>(modeArray):
+					<span style="color: #008800; font-weight: bold">if</span> rackerArray[<span style="color: #0000DD; font-weight: bold">4</span>] <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&quot;chats&quot;</span>:
+						color <span style="color: #333333">=</span> <span style="background-color: #fff0f0">&quot;#7e5d6d&quot;</span>
+					<span style="color: #008800; font-weight: bold">if</span> rackerArray[<span style="color: #0000DD; font-weight: bold">4</span>] <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&quot;tickets&quot;</span>:
+						color <span style="color: #333333">=</span> <span style="background-color: #fff0f0">&quot;#5d7e6e&quot;</span>
+					<span style="color: #008800; font-weight: bold">if</span> rackerArray[<span style="color: #0000DD; font-weight: bold">4</span>] <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&quot;alerts&quot;</span>:
+						color <span style="color: #333333">=</span> <span style="background-color: #fff0f0">&quot;#7e6e5d&quot;</span>
+			<span style="color: #008800; font-weight: bold">elif</span> rackerArray[<span style="color: #0000DD; font-weight: bold">1</span>] <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&quot;Steffen H&quot;</span>:
+				color <span style="color: #333333">=</span> <span style="background-color: #fff0f0">&quot;#b7dcd8&quot;</span>
+			<span style="color: #008800; font-weight: bold">elif</span> rackerArray[<span style="color: #0000DD; font-weight: bold">1</span>] <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&quot;Stacey F&quot;</span>:
+				color <span style="color: #333333">=</span> <span style="background-color: #fff0f0">&quot;#5d6d7e&quot;</span>
+			<span style="color: #008800; font-weight: bold">else</span>:
+				color <span style="color: #333333">=</span> <span style="background-color: #fff0f0">&quot;#081B2D&quot;</span>
+
+			data <span style="color: #333333">=</span> data <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;{x: &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(count) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;, low: Date.UTC(&quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(lowD[<span style="color: #0000DD; font-weight: bold">0</span>]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;, &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(lowD[<span style="color: #0000DD; font-weight: bold">1</span>]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;, &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(lowD[<span style="color: #0000DD; font-weight: bold">2</span>]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;, &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(lowT[<span style="color: #0000DD; font-weight: bold">0</span>]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;, &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(lowT[<span style="color: #0000DD; font-weight: bold">1</span>]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;), high: Date.UTC(&quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(highD[<span style="color: #0000DD; font-weight: bold">0</span>]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;, &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(highD[<span style="color: #0000DD; font-weight: bold">1</span>]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;, &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(highD[<span style="color: #0000DD; font-weight: bold">2</span>]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;, &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(highT[<span style="color: #0000DD; font-weight: bold">0</span>]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;, &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(highT[<span style="color: #0000DD; font-weight: bold">1</span>]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;), name: &quot;</span> <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;&quot;&#39;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(rackerArray[<span style="color: #0000DD; font-weight: bold">0</span>]) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;&quot;, color: &quot;&#39;</span> <span style="color: #333333">+</span> color <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;&quot;}&#39;</span>
+
+                	count<span style="color: #333333">+=</span><span style="color: #0000DD; font-weight: bold">1</span>
+                	<span style="color: #008800; font-weight: bold">if</span> count <span style="color: #333333">==</span> <span style="color: #007020">len</span>(timesArray):
+                        	categories<span style="color: #333333">=</span>categories<span style="color: #333333">+</span><span style="background-color: #fff0f0">&quot;&#39;&quot;</span><span style="color: #333333">+</span><span style="color: #007020">str</span>(rackerArray[<span style="color: #0000DD; font-weight: bold">0</span>])<span style="color: #333333">+</span><span style="background-color: #fff0f0">&quot;&#39;]&quot;</span>
+                	<span style="color: #008800; font-weight: bold">else</span>:
+                        	categories<span style="color: #333333">=</span>categories<span style="color: #333333">+</span><span style="background-color: #fff0f0">&quot;&#39;&quot;</span><span style="color: #333333">+</span><span style="color: #007020">str</span>(rackerArray[<span style="color: #0000DD; font-weight: bold">0</span>])<span style="color: #333333">+</span><span style="background-color: #fff0f0">&quot;&#39;,&quot;</span>
+                        	data <span style="color: #333333">=</span> data <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39;,&#39;</span>
+
+		dataArray<span style="color: #333333">.</span>append(data)
+		dataArray<span style="color: #333333">.</span>append(categories)
+		dataSet[key]<span style="color: #333333">=</span> dataArray
+
+		iteration<span style="color: #333333">+=</span><span style="color: #0000DD; font-weight: bold">1</span>
+	
+	<span style="color: #008800; font-weight: bold">return</span> dataSet, message
+
+
+
+<span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">dataSet</span>(cursor,mariadb_connection,user,manager,stime,etime,mode,message):
+
+	<span style="color: #888888">#Sanitize some inputs before submitting</span>
+	s <span style="color: #333333">=</span> dt<span style="color: #333333">.</span>strptime( stime , <span style="background-color: #fff0f0">&quot;%Y-%m-</span><span style="background-color: #eeeeee">%d</span><span style="background-color: #fff0f0"> %H:%M:%S&quot;</span>)
+	e <span style="color: #333333">=</span> dt<span style="color: #333333">.</span>strptime( etime , <span style="background-color: #fff0f0">&quot;%Y-%m-</span><span style="background-color: #eeeeee">%d</span><span style="background-color: #fff0f0"> %H:%M:%S&quot;</span>)
+
+	oldSTime<span style="color: #333333">=</span>[]
+	oldETime<span style="color: #333333">=</span>[]
+
+	cursor<span style="color: #333333">.</span>execute(<span style="background-color: #fff0f0">&#39;&#39;&#39;SELECT DISTINCT(Mode), StartTime, EndTime FROM smblinux WHERE DATE(EndTime) = DATE(NOW()) and Name = &quot;</span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">&quot;;&#39;&#39;&#39;</span> <span style="color: #333333">%</span> (user))
+
+	<span style="color: #008800; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> cursor<span style="color: #333333">.</span>rowcount:    	
+		<span style="color: #008800; font-weight: bold">if</span> e <span style="color: #333333">&gt;</span> s:
+			cursor<span style="color: #333333">.</span>execute(<span style="background-color: #fff0f0">&#39;&#39;&#39;INSERT INTO smblinux (Name, Manager, StartTime, EndTime, Mode) VALUES (</span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">, </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">, </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">, </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">, </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">);&#39;&#39;&#39;</span>, (user, manager, stime, etime, mode))
+			mariadb_connection<span style="color: #333333">.</span>commit()
+			<span style="color: #008800; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> cursor<span style="color: #333333">.</span>rowcount:
+				message <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&#39;Unable to add - Honestly I do not know why&#39;</span>
+			<span style="color: #008800; font-weight: bold">else</span>:
+				message <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&#39;Racker: &#39;</span> <span style="color: #333333">+</span> user <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; -- Successfully added between &#39;</span> <span style="color: #333333">+</span> stime <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; and &#39;</span> <span style="color: #333333">+</span> etime
+		<span style="color: #008800; font-weight: bold">else</span>:
+			message <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&#39;End time must be after Start time&#39;</span>
+	<span style="color: #008800; font-weight: bold">else</span>:
+		<span style="color: #008800; font-weight: bold">for</span> row <span style="color: #000000; font-weight: bold">in</span> cursor:
+			oldMode<span style="color: #333333">=</span>row[<span style="color: #0000DD; font-weight: bold">0</span>]
+			oldSTime<span style="color: #333333">.</span>append(row[<span style="color: #0000DD; font-weight: bold">1</span>])
+			oldETime<span style="color: #333333">.</span>append(row[<span style="color: #0000DD; font-weight: bold">2</span>])
+		<span style="color: #008800; font-weight: bold">if</span> oldMode <span style="color: #333333">!=</span> mode:
+			message <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&quot;You can&#39;t add another break using a different mode (phone, chat, ticket, etc.) than the break already submitted&quot;</span>
+		<span style="color: #008800; font-weight: bold">elif</span> s <span style="color: #000000; font-weight: bold">in</span> oldSTime <span style="color: #000000; font-weight: bold">and</span> e <span style="color: #000000; font-weight: bold">in</span> oldETime:
+			message <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&quot;You already have that break slot..&quot;</span>
+		<span style="color: #008800; font-weight: bold">elif</span> e <span style="color: #333333">&lt;</span> s:
+			message <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&#39;End time must be after Start time&#39;</span>
+		<span style="color: #008800; font-weight: bold">else</span>:
+			cursor<span style="color: #333333">.</span>execute(<span style="background-color: #fff0f0">&#39;&#39;&#39;INSERT INTO smblinux (Name, Manager, StartTime, EndTime, Mode) VALUES (</span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">, </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">, </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">, </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">, </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">);&#39;&#39;&#39;</span>, (user, manager, stime, etime, mode))
+        		mariadb_connection<span style="color: #333333">.</span>commit()
+
+       			<span style="color: #008800; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> cursor<span style="color: #333333">.</span>rowcount:
+                		message <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&#39;Unable to add - Honestly I do not know why&#39;</span>
+			<span style="color: #008800; font-weight: bold">else</span>:
+				message <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&#39;Racker: &#39;</span> <span style="color: #333333">+</span> user <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; -- Successfully added between &#39;</span> <span style="color: #333333">+</span> stime <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; and &#39;</span> <span style="color: #333333">+</span> etime 
+			
+
+	<span style="color: #008800; font-weight: bold">return</span> dataGet(cursor,message)
+
+<span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">dataDel</span>(cursor,mariadb_connection,user,manager,stime,etime,mode,message):
+	
+	<span style="color: #008800; font-weight: bold">if</span> stime <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;auto&#39;</span> <span style="color: #000000; font-weight: bold">or</span> etime <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;auto&#39;</span>:
+		cursor<span style="color: #333333">.</span>execute(<span style="background-color: #fff0f0">&#39;&#39;&#39;DELETE FROM smblinux WHERE Name = </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0"> and Manager = </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0"> and Mode = </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">;&#39;&#39;&#39;</span>, (user, manager, mode))
+		mariadb_connection<span style="color: #333333">.</span>commit()
+	<span style="color: #008800; font-weight: bold">else</span>:
+		cursor<span style="color: #333333">.</span>execute(<span style="background-color: #fff0f0">&#39;&#39;&#39;DELETE FROM smblinux WHERE Name = </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0"> and Manager = </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0"> and StartTime = </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0"> and EndTime = </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0"> and Mode = </span><span style="background-color: #eeeeee">%s</span><span style="background-color: #fff0f0">;&#39;&#39;&#39;</span>, (user, manager, stime, etime, mode))
+		mariadb_connection<span style="color: #333333">.</span>commit()
+
+	<span style="color: #008800; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> cursor<span style="color: #333333">.</span>rowcount:
+		message <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&#39;Unable to delete - selected entry does not exist&#39;</span>	
+	<span style="color: #008800; font-weight: bold">elif</span> stime <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;auto&#39;</span> <span style="color: #000000; font-weight: bold">or</span> etime <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;auto&#39;</span>:
+		message <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&#39;Racker: &#39;</span> <span style="color: #333333">+</span> user <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; -- Successfully removed all occurances&#39;</span>
+	<span style="color: #008800; font-weight: bold">else</span>:
+		message <span style="color: #333333">+=</span> <span style="background-color: #fff0f0">&#39;Racker: &#39;</span> <span style="color: #333333">+</span> user <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; -- Successfully removed between &#39;</span> <span style="color: #333333">+</span> stime <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; and &#39;</span> <span style="color: #333333">+</span> etime
+ 
+        <span style="color: #008800; font-weight: bold">return</span> dataGet(cursor,message)
+
+
+<span style="color: #555555; font-weight: bold">@app.route</span>(<span style="background-color: #fff0f0">&quot;/&quot;</span>, methods<span style="color: #333333">=</span>[<span style="background-color: #fff0f0">&#39;GET&#39;</span>,<span style="background-color: #fff0f0">&#39;POST&#39;</span>])
+<span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">lunch</span>():
+
+	<span style="color: #888888">#Defining Static Data</span>
+	<span style="color: #888888">#Teams	</span>
+	JoeK <span style="color: #333333">=</span> [<span style="background-color: #fff0f0">&#39;Joe S&#39;</span>, <span style="background-color: #fff0f0">&#39;Matt V&#39;</span>, <span style="background-color: #fff0f0">&#39;Grace T&#39;</span>, <span style="background-color: #fff0f0">&#39;Pam L&#39;</span>, <span style="background-color: #fff0f0">&#39;Marcos T&#39;</span>, <span style="background-color: #fff0f0">&#39;Carlos S&#39;</span>, <span style="background-color: #fff0f0">&#39;Jim C&#39;</span>, <span style="background-color: #fff0f0">&#39;Lee N&#39;</span>, <span style="background-color: #fff0f0">&#39;Tim M&#39;</span>, <span style="background-color: #fff0f0">&#39;Uwe N&#39;</span>]
+	SteffenH <span style="color: #333333">=</span> [<span style="background-color: #fff0f0">&#39;Anthony D&#39;</span>, <span style="background-color: #fff0f0">&#39;Brandon B&#39;</span>, <span style="background-color: #fff0f0">&#39;Jessica W&#39;</span>, <span style="background-color: #fff0f0">&#39;Mike Herrera&#39;</span>, <span style="background-color: #fff0f0">&#39;Mike Hernandez&#39;</span>, <span style="background-color: #fff0f0">&#39;Pete E&#39;</span>, <span style="background-color: #fff0f0">&#39;Rebecca S&#39;</span>, <span style="background-color: #fff0f0">&#39;Travis H&#39;</span>]
+	StaceyF <span style="color: #333333">=</span> [<span style="background-color: #fff0f0">&#39;Eddie D&#39;</span>, <span style="background-color: #fff0f0">&#39;Aubrey M&#39;</span>, <span style="background-color: #fff0f0">&#39;Chris H&#39;</span>, <span style="background-color: #fff0f0">&#39;Joe A&#39;</span>, <span style="background-color: #fff0f0">&#39;Josh H&#39;</span>, <span style="background-color: #fff0f0">&#39;Mallory H&#39;</span>, <span style="background-color: #fff0f0">&#39;Mohammed A&#39;</span>, <span style="background-color: #fff0f0">&#39;Tom H&#39;</span>]
+	<span style="color: #888888">#Dates</span>
+	today <span style="color: #333333">=</span>	datetime<span style="color: #333333">.</span>date<span style="color: #333333">.</span>today()
+
+	<span style="color: #888888">#MySQL connection</span>
+	mariadb_connection <span style="color: #333333">=</span> mariadb<span style="color: #333333">.</span>connect(user<span style="color: #333333">=</span><span style="background-color: #fff0f0">&#39;smblinux&#39;</span>, password<span style="color: #333333">=</span><span style="background-color: #fff0f0">&#39;sanitized&#39;</span>, database<span style="color: #333333">=</span><span style="background-color: #fff0f0">&#39;lunch_schedule&#39;</span>)
+	cursor <span style="color: #333333">=</span> mariadb_connection<span style="color: #333333">.</span>cursor(buffered<span style="color: #333333">=</span><span style="color: #007020">True</span>)
+	<span style="color: #888888">#Messages and Warnings</span>
+	message<span style="color: #333333">=</span><span style="background-color: #fff0f0">&#39;&#39;</span>
+	errorOut<span style="color: #333333">=</span><span style="background-color: #fff0f0">&#39;&#39;</span>
+
+
+
+	<span style="color: #008800; font-weight: bold">if</span> request<span style="color: #333333">.</span>method <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;POST&#39;</span>:
+		<span style="color: #888888">#Grab user</span>
+        	user <span style="color: #333333">=</span> <span style="color: #007020">str</span>(request<span style="color: #333333">.</span>form<span style="color: #333333">.</span>getlist(<span style="background-color: #fff0f0">&#39;Name&#39;</span>)[<span style="color: #0000DD; font-weight: bold">0</span>])
+		<span style="color: #888888">#Sanitize user</span>
+		<span style="color: #008800; font-weight: bold">if</span> (user <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> JoeK) <span style="color: #000000; font-weight: bold">and</span> (user <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> SteffenH) <span style="color: #000000; font-weight: bold">and</span> (user <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> StaceyF):
+			errorOut<span style="color: #333333">+=</span><span style="background-color: #fff0f0">&quot; Error: Did not find Manager&quot;</span>
+
+		<span style="color: #008800; font-weight: bold">if</span> <span style="color: #007020">str</span>(request<span style="color: #333333">.</span>form<span style="color: #333333">.</span>getlist(<span style="background-color: #fff0f0">&#39;Start Time&#39;</span>)[<span style="color: #0000DD; font-weight: bold">0</span>]) <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;auto&#39;</span>:
+			stime<span style="color: #333333">=</span><span style="background-color: #fff0f0">&#39;auto&#39;</span>
+		<span style="color: #008800; font-weight: bold">else</span>:			
+			stime <span style="color: #333333">=</span> <span style="color: #007020">str</span>(today) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &#39;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(request<span style="color: #333333">.</span>form<span style="color: #333333">.</span>getlist(<span style="background-color: #fff0f0">&#39;Start Time&#39;</span>)[<span style="color: #0000DD; font-weight: bold">0</span>])
+
+		<span style="color: #008800; font-weight: bold">if</span> <span style="color: #007020">str</span>(request<span style="color: #333333">.</span>form<span style="color: #333333">.</span>getlist(<span style="background-color: #fff0f0">&#39;End Time&#39;</span>)[<span style="color: #0000DD; font-weight: bold">0</span>]) <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;auto&#39;</span>:
+			etime<span style="color: #333333">=</span><span style="background-color: #fff0f0">&#39;auto&#39;</span>
+		<span style="color: #008800; font-weight: bold">else</span>:
+			etime <span style="color: #333333">=</span> <span style="color: #007020">str</span>(today) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; &#39;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(request<span style="color: #333333">.</span>form<span style="color: #333333">.</span>getlist(<span style="background-color: #fff0f0">&#39;End Time&#39;</span>)[<span style="color: #0000DD; font-weight: bold">0</span>])
+
+                <span style="color: #888888">#Sanitize times</span>
+                times <span style="color: #333333">=</span> [<span style="background-color: #fff0f0">&#39;8:00:00&#39;</span>, <span style="background-color: #fff0f0">&#39;8:10:00&#39;</span>, <span style="background-color: #fff0f0">&#39;8:20:00&#39;</span>, <span style="background-color: #fff0f0">&#39;8:30:00&#39;</span>, <span style="background-color: #fff0f0">&#39;8:40:00&#39;</span> , <span style="background-color: #fff0f0">&#39;8:50:00&#39;</span>, <span style="background-color: #fff0f0">&#39;9:00:00&#39;</span>, <span style="background-color: #fff0f0">&#39;9:10:00&#39;</span>, <span style="background-color: #fff0f0">&#39;9:20:00&#39;</span>, <span style="background-color: #fff0f0">&#39;9:30:00&#39;</span>, <span style="background-color: #fff0f0">&#39;9:40:00&#39;</span>, <span style="background-color: #fff0f0">&#39;9:50:00&#39;</span>, <span style="background-color: #fff0f0">&#39;10:00:00&#39;</span>, <span style="background-color: #fff0f0">&#39;10:10:00&#39;</span>, <span style="background-color: #fff0f0">&#39;10:20:00&#39;</span>, <span style="background-color: #fff0f0">&#39;10:30:00&#39;</span>, <span style="background-color: #fff0f0">&#39;10:40:00&#39;</span>, <span style="background-color: #fff0f0">&#39;10:50:00&#39;</span>, <span style="background-color: #fff0f0">&#39;11:00:00&#39;</span>, <span style="background-color: #fff0f0">&#39;11:10:00&#39;</span>, <span style="background-color: #fff0f0">&#39;11:20:00&#39;</span>, <span style="background-color: #fff0f0">&#39;11:30:00&#39;</span>, <span style="background-color: #fff0f0">&#39;11:40:00&#39;</span>, <span style="background-color: #fff0f0">&#39;11:50:00&#39;</span>, <span style="background-color: #fff0f0">&#39;12:00:00&#39;</span>, <span style="background-color: #fff0f0">&#39;12:10:00&#39;</span>, <span style="background-color: #fff0f0">&#39;12:20:00&#39;</span>, <span style="background-color: #fff0f0">&#39;12:30:00&#39;</span>, <span style="background-color: #fff0f0">&#39;12:40:00&#39;</span>, <span style="background-color: #fff0f0">&#39;12:50:00&#39;</span>, <span style="background-color: #fff0f0">&#39;13:00:00&#39;</span>, <span style="background-color: #fff0f0">&#39;13:10:00&#39;</span>, <span style="background-color: #fff0f0">&#39;13:20:00&#39;</span>, <span style="background-color: #fff0f0">&#39;13:30:00&#39;</span>, <span style="background-color: #fff0f0">&#39;13:40:00&#39;</span>, <span style="background-color: #fff0f0">&#39;13:50:00&#39;</span>, <span style="background-color: #fff0f0">&#39;14:00:00&#39;</span>, <span style="background-color: #fff0f0">&#39;14:10:00&#39;</span>, <span style="background-color: #fff0f0">&#39;14:20:00&#39;</span>, <span style="background-color: #fff0f0">&#39;14:30:00&#39;</span>, <span style="background-color: #fff0f0">&#39;14:40:00&#39;</span>, <span style="background-color: #fff0f0">&#39;14:50:00&#39;</span>, <span style="background-color: #fff0f0">&#39;15:00:00&#39;</span>, <span style="background-color: #fff0f0">&#39;15:10:00&#39;</span>, <span style="background-color: #fff0f0">&#39;15:20:00&#39;</span>, <span style="background-color: #fff0f0">&#39;15:30:00&#39;</span>, <span style="background-color: #fff0f0">&#39;15:40:00&#39;</span>, <span style="background-color: #fff0f0">&#39;15:50:00&#39;</span>, <span style="background-color: #fff0f0">&#39;16:00:00&#39;</span>, <span style="background-color: #fff0f0">&#39;16:10:00&#39;</span>, <span style="background-color: #fff0f0">&#39;16:20:00&#39;</span>, <span style="background-color: #fff0f0">&#39;16:30:00&#39;</span>, <span style="background-color: #fff0f0">&#39;16:40:00&#39;</span>, <span style="background-color: #fff0f0">&#39;16:50:00&#39;</span>, <span style="background-color: #fff0f0">&#39;17:00:00&#39;</span>, <span style="background-color: #fff0f0">&#39;auto&#39;</span>]
+                <span style="color: #008800; font-weight: bold">if</span> (<span style="color: #007020">str</span>(request<span style="color: #333333">.</span>form<span style="color: #333333">.</span>getlist(<span style="background-color: #fff0f0">&#39;Start Time&#39;</span>)[<span style="color: #0000DD; font-weight: bold">0</span>]) <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> times) <span style="color: #000000; font-weight: bold">or</span> (<span style="color: #007020">str</span>(request<span style="color: #333333">.</span>form<span style="color: #333333">.</span>getlist(<span style="background-color: #fff0f0">&#39;End Time&#39;</span>)[<span style="color: #0000DD; font-weight: bold">0</span>]) <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> times):
+                        errorOut<span style="color: #333333">+=</span><span style="background-color: #fff0f0">&quot; Error: Times did not pass validity check &quot;</span>
+
+		mode <span style="color: #333333">=</span> <span style="color: #007020">str</span>(request<span style="color: #333333">.</span>form<span style="color: #333333">.</span>getlist(<span style="background-color: #fff0f0">&#39;Mode&#39;</span>)[<span style="color: #0000DD; font-weight: bold">0</span>])
+		
+		<span style="color: #888888">#Sanitize mode</span>
+		modes<span style="color: #333333">=</span>[<span style="background-color: #fff0f0">&#39;phones&#39;</span>,<span style="background-color: #fff0f0">&#39;chats&#39;</span>,<span style="background-color: #fff0f0">&#39;tickets&#39;</span>,<span style="background-color: #fff0f0">&#39;alerts&#39;</span>,<span style="background-color: #fff0f0">&#39;other&#39;</span>]
+		<span style="color: #008800; font-weight: bold">if</span> mode <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> modes:
+			errorOut<span style="color: #333333">+=</span><span style="background-color: #fff0f0">&quot;Error: Mode not found&quot;</span>
+
+		action <span style="color: #333333">=</span> <span style="color: #007020">str</span>(request<span style="color: #333333">.</span>form<span style="color: #333333">.</span>getlist(<span style="background-color: #fff0f0">&#39;Action&#39;</span>)[<span style="color: #0000DD; font-weight: bold">0</span>])
+
+		<span style="color: #888888">#Sanitize action</span>
+		actions<span style="color: #333333">=</span>[<span style="background-color: #fff0f0">&#39;add&#39;</span>,<span style="background-color: #fff0f0">&#39;remove&#39;</span>]
+		<span style="color: #008800; font-weight: bold">if</span> action <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> actions:
+			errorOut<span style="color: #333333">+=</span><span style="background-color: #fff0f0">&quot; Error: Mode not found&quot;</span>
+
+		<span style="color: #008800; font-weight: bold">if</span> user <span style="color: #000000; font-weight: bold">in</span> JoeK:
+			manager<span style="color: #333333">=</span><span style="background-color: #fff0f0">&quot;Joe K&quot;</span>
+		<span style="color: #008800; font-weight: bold">elif</span> user <span style="color: #000000; font-weight: bold">in</span> SteffenH:
+			manager<span style="color: #333333">=</span><span style="background-color: #fff0f0">&quot;Steffen H&quot;</span>
+		<span style="color: #008800; font-weight: bold">elif</span> user <span style="color: #000000; font-weight: bold">in</span> StaceyF:
+			manager<span style="color: #333333">=</span><span style="background-color: #fff0f0">&quot;Stacey F&quot;</span>
+		<span style="color: #008800; font-weight: bold">else</span>:
+			manager<span style="color: #333333">=</span><span style="background-color: #fff0f0">&quot;null&quot;</span>
+
+		<span style="color: #008800; font-weight: bold">if</span> action <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;add&#39;</span> <span style="color: #000000; font-weight: bold">and</span> <span style="color: #007020">len</span>(errorOut) <span style="color: #333333">==</span> <span style="color: #0000DD; font-weight: bold">0</span>:
+			<span style="color: #008800; font-weight: bold">if</span> stime <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;auto&#39;</span> <span style="color: #000000; font-weight: bold">or</span> etime <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;auto&#39;</span>:
+				alldata, message <span style="color: #333333">=</span> auto(cursor,mariadb_connection,user,manager,mode,message,today)
+			<span style="color: #008800; font-weight: bold">else</span>:
+				alldata, message <span style="color: #333333">=</span> dataSet(cursor,mariadb_connection,user,manager,stime,etime,mode,message)
+		<span style="color: #008800; font-weight: bold">elif</span> action <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&#39;remove&#39;</span> <span style="color: #000000; font-weight: bold">and</span> <span style="color: #007020">len</span>(errorOut) <span style="color: #333333">==</span> <span style="color: #0000DD; font-weight: bold">0</span>:
+			alldata, message  <span style="color: #333333">=</span> dataDel(cursor,mariadb_connection,user,manager,stime,etime,mode,message)
+		<span style="color: #008800; font-weight: bold">else</span>:
+			message <span style="color: #333333">=</span> <span style="background-color: #fff0f0">&quot;Data did not pass validity check. We received - Name: &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(user) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot; Start Time: &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(stime) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot; End Time: &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(etime) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot; Mode : &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(mode) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot; Action: &quot;</span> <span style="color: #333333">+</span> <span style="color: #007020">str</span>(action) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&quot;Errors -- &quot;</span> <span style="color: #333333">+</span> errorOut
+			alldata, message <span style="color: #333333">=</span> dataGet(cursor,message)
+		
+		<span style="color: #008800; font-weight: bold">return</span> render_template(<span style="background-color: #fff0f0">&#39;lunch.html&#39;</span>, compData<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;composit&#39;</span>][<span style="color: #0000DD; font-weight: bold">0</span>], compCategories<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;composit&#39;</span>][<span style="color: #0000DD; font-weight: bold">1</span>], phoneData<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;phones&#39;</span>][<span style="color: #0000DD; font-weight: bold">0</span>], phoneCategories<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;phones&#39;</span>][<span style="color: #0000DD; font-weight: bold">1</span>], chatData<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;chats&#39;</span>][<span style="color: #0000DD; font-weight: bold">0</span>], chatCategories<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;chats&#39;</span>][<span style="color: #0000DD; font-weight: bold">1</span>], ticketData<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;tickets&#39;</span>][<span style="color: #0000DD; font-weight: bold">0</span>], ticketCategories<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;tickets&#39;</span>][<span style="color: #0000DD; font-weight: bold">1</span>], alertData<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;alerts&#39;</span>][<span style="color: #0000DD; font-weight: bold">0</span>], alertCategories<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;alerts&#39;</span>][<span style="color: #0000DD; font-weight: bold">1</span>], otherData<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;other&#39;</span>][<span style="color: #0000DD; font-weight: bold">0</span>], otherCategories<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;other&#39;</span>][<span style="color: #0000DD; font-weight: bold">1</span>], message<span style="color: #333333">=</span>message, warning<span style="color: #333333">=</span>warnings(cursor))
+	<span style="color: #008800; font-weight: bold">else</span>:
+		alldata, message <span style="color: #333333">=</span> dataGet(cursor,message)
+		<span style="color: #008800; font-weight: bold">return</span> render_template(<span style="background-color: #fff0f0">&#39;lunch.html&#39;</span>, compData<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;composit&#39;</span>][<span style="color: #0000DD; font-weight: bold">0</span>], compCategories<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;composit&#39;</span>][<span style="color: #0000DD; font-weight: bold">1</span>], phoneData<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;phones&#39;</span>][<span style="color: #0000DD; font-weight: bold">0</span>], phoneCategories<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;phones&#39;</span>][<span style="color: #0000DD; font-weight: bold">1</span>], chatData<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;chats&#39;</span>][<span style="color: #0000DD; font-weight: bold">0</span>], chatCategories<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;chats&#39;</span>][<span style="color: #0000DD; font-weight: bold">1</span>], ticketData<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;tickets&#39;</span>][<span style="color: #0000DD; font-weight: bold">0</span>], ticketCategories<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;tickets&#39;</span>][<span style="color: #0000DD; font-weight: bold">1</span>], alertData<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;alerts&#39;</span>][<span style="color: #0000DD; font-weight: bold">0</span>], alertCategories<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;alerts&#39;</span>][<span style="color: #0000DD; font-weight: bold">1</span>], otherData<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;other&#39;</span>][<span style="color: #0000DD; font-weight: bold">0</span>], otherCategories<span style="color: #333333">=</span>alldata[<span style="background-color: #fff0f0">&#39;other&#39;</span>][<span style="color: #0000DD; font-weight: bold">1</span>], message<span style="color: #333333">=</span>message, warning<span style="color: #333333">=</span>warnings(cursor))
+
+
+<span style="color: #555555; font-weight: bold">@app.route</span>(<span style="background-color: #fff0f0">&quot;/about&quot;</span>, methods<span style="color: #333333">=</span>[<span style="background-color: #fff0f0">&#39;GET&#39;</span>])
+<span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">about</span>():
+	<span style="color: #008800; font-weight: bold">return</span> render_template(<span style="background-color: #fff0f0">&#39;about.html&#39;</span>)
+
+
+<span style="color: #008800; font-weight: bold">if</span> __name__ <span style="color: #333333">==</span> <span style="background-color: #fff0f0">&quot;__main__&quot;</span>:
+	app<span style="color: #333333">.</span>run(debug<span style="color: #333333">=</span><span style="color: #007020">True</span>)
+	app<span style="color: #333333">.</span>run()
+</pre></div>
